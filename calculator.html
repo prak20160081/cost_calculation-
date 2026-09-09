@@ -1,0 +1,1449 @@
+This is a complete, standalone HTML document for an Item Cost Calculator app. It's a single-file web application that includes all the styles, structure, and logic for managing item costs, calculations, and user data.
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Item Cost Calculator</title>
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0d1117, #161b22, #1f293d);
+      color:#e6edf3;
+      min-height:100vh;
+      overflow-x:hidden;
+      transition: background 0.3s ease;
+    }
+    body.light-mode{
+      background: linear-gradient(135deg, #f5f5f5, #ffffff, #efefef);
+      color:#1a1a1a;
+    }
+    body.light-mode .card{
+      background:rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    body.light-mode h1, body.light-mode h2, body.light-mode h3{color: #0066cc;}
+    body.light-mode input{
+      background:#f9f9f9;
+      color:#0066cc;
+      border-color:#cccccc;
+    }
+    body.light-mode input:focus{
+      border-color:#0066cc;
+      box-shadow: 0 0 8px rgba(0, 102, 204, 0.3);
+    }
+    body.light-mode label{color:#555;}
+    body.light-mode .result{background:#f5f5f5;border-color:#ddd;}
+    body.light-mode button{background:#f0f0f0;color:#333;border-color:#ccc;}
+    body.light-mode button:hover{background:#e0e0e0;}
+    body.light-mode .primary{background:#0066cc;color:#fff;}
+    body.light-mode .primary:hover{background:#0052a3;}
+    body.light-mode .menu{background:#fafafa;border-color:#ddd;}
+
+    .card{
+      width:min(920px,94%);
+      margin:25px auto;
+      padding:25px;
+      border-radius:20px;
+      background:rgba(22, 27, 34, 0.75);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow:0 20px 50px rgba(0, 0, 0, 0.6);
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(20, 30, 50, 0.9), rgba(35, 50, 70, 0.85));
+    }
+
+    h1,h2,h3{text-align:center; color: #58a6ff;}
+    .hidden{display:none!important}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+
+    label{font-size:13px;color:#8b949e;font-weight:600;}
+    input{
+      width:100%;
+      padding:12px;
+      margin-top:6px;
+      border:2px solid transparent;
+      border-radius:10px;
+      background:linear-gradient(135deg, #0d1117, #1a1f2e);
+      color:#58a6ff;
+      font-size:16px;
+      outline:none;
+      transition: all 0.3s;
+    }
+    input:focus{
+      border-color:#58a6ff;
+      box-shadow: 0 0 12px rgba(88, 166, 255, 0.6);
+      background:linear-gradient(135deg, #1a2535, #2a3545);
+    }
+
+    button{
+      border:0;
+      border-radius:10px;
+      padding:12px 18px;
+      margin:6px 4px;
+      font-weight:bold;
+      cursor:pointer;
+      background:linear-gradient(135deg, #21262d, #2d3139);
+      color:#c9d1d9;
+      border: 1px solid rgba(240, 246, 252, 0.1);
+      transition: all 0.2s;
+    }
+    button:hover{
+      background:linear-gradient(135deg, #30363d, #3d4451);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(88, 166, 255, 0.2);
+    }
+    button:active{transform: translateY(1px);}
+
+    .primary{
+      background:linear-gradient(135deg, #238636, #2ea043);
+      color:#fff;
+      border:none;
+      box-shadow: 0 4px 12px rgba(35, 134, 54, 0.3);
+    }
+    .primary:hover{
+      background:linear-gradient(135deg, #2ea043, #3fb950);
+      box-shadow: 0 6px 20px rgba(35, 134, 54, 0.5);
+    }
+
+    .danger{
+      background:linear-gradient(135deg, #da3633, #f85149);
+      color:#fff;
+      box-shadow: 0 4px 12px rgba(218, 54, 51, 0.3);
+    }
+    .danger:hover{
+      background:linear-gradient(135deg, #f85149, #ff6b6b);
+      box-shadow: 0 6px 20px rgba(218, 54, 51, 0.5);
+    }
+
+    .linkBtn{background:transparent;color:#58a6ff;padding:8px;border:none;text-decoration:underline}
+
+    .row{text-align:center;margin-top:15px}
+    .result{
+      margin-top:20px;
+      padding:18px;
+      border-radius:14px;
+      background:linear-gradient(135deg, #0d1117, #161b22);
+      border:1px solid #30363d;
+      box-shadow: inset 0 0 20px rgba(88, 166, 255, 0.1);
+    }
+    .big{
+      font-size:26px;
+      font-weight:800;
+      text-align:center;
+      background:linear-gradient(135deg, #f0883e, #ff8c42);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .amount{
+      font-size:28px;
+      font-weight:800;
+      text-align:center;
+      background:linear-gradient(135deg, #3fb950, #56d364);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    .nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;gap:8px;flex-wrap:wrap;padding:12px;background:linear-gradient(90deg, rgba(88,166,255,0.1), rgba(79,195,247,0.1));border-radius:10px;}
+    .homeBtn{
+      background:linear-gradient(135deg, #f0883e, #ff9800);
+      color:#0d1117;
+      font-weight:bold;
+      box-shadow: 0 4px 12px rgba(240, 136, 62, 0.3);
+    }
+    .homeBtn:hover{
+      background:linear-gradient(135deg, #ff9800, #ffa726);
+      box-shadow: 0 6px 20px rgba(240, 136, 62, 0.5);
+    }
+
+    .menuWrap{position:relative;display:inline-block}
+    .dots{
+      font-size:20px;
+      padding:6px 14px;
+      background:linear-gradient(135deg, #21262d, #2d3139);
+      border-radius:8px;
+      border: 1px solid #30363d;
+      cursor:pointer;
+      transition: all 0.2s;
+    }
+    .dots:hover{
+      background:linear-gradient(135deg, #30363d, #3d4451);
+      box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2);
+    }
+    .menu{
+      position:absolute;
+      right:0;
+      top:45px;
+      background:linear-gradient(135deg, #161b22, #1f293d);
+      border:1px solid #30363d;
+      border-radius:10px;
+      padding:8px;
+      min-width:140px;
+      z-index:100;
+      box-shadow:0 10px 30px rgba(0,0,0,0.8);
+    }
+    .menu button{display:block;width:100%;margin:3px 0;text-align:left;background:transparent;color:#c9d1d9;border:none;padding:8px 12px;border-radius:6px;transition:all 0.2s;}
+    .menu button:hover{background:rgba(88, 166, 255, 0.2);color:#58a6ff;}
+
+    .rateBox{
+      border:2px solid #58a6ff;
+      padding:15px;
+      border-radius:14px;
+      margin-top:15px;
+      background:linear-gradient(135deg, rgba(88,166,255,0.05), rgba(79,195,247,0.05));
+      box-shadow: inset 0 0 15px rgba(88, 166, 255, 0.1);
+    }
+
+    .table-container{overflow-x:auto;margin-top:15px;}
+    table{width:100%;border-collapse:collapse;margin-top:10px;background:linear-gradient(135deg, #0d1117, #161b22);border-radius:10px;overflow:hidden;box-shadow: 0 4px 12px rgba(0,0,0,0.4);}
+    th,td{padding:12px;text-align:center;border-bottom:1px solid #30363d;font-size:14px;}
+    th{background:linear-gradient(135deg, #21262d, #2d3139);color:#58a6ff;font-weight:600;}
+    tr:hover{background:rgba(88, 166, 255, 0.05);}
+
+    .animated-card {
+      animation: pulseGlow 4s infinite alternate;
+      background: linear-gradient(135deg, rgba(20, 30, 50, 0.95), rgba(40, 60, 90, 0.9));
+    }
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 15px rgba(88, 166, 255, 0.1), 0 20px 50px rgba(0, 0, 0, 0.6); }
+      100% { box-shadow: 0 0 30px rgba(88, 166, 255, 0.3), 0 20px 50px rgba(0, 0, 0, 0.6); }
+    }
+
+    .itachi{min-height:280px;text-align:center;display:flex;align-items:center;justify-content:center;flex-direction:column}
+    .itachiChar{position:relative;width:130px;height:160px;animation:float 2.5s ease-in-out infinite}
+    .head{position:absolute;width:78px;height:78px;border-radius:50%;background:#e8b28b;left:26px;top:22px;z-index:2}
+    .hair{position:absolute;width:105px;height:75px;background:#090a0f;left:12px;top:5px;border-radius:55% 55% 25% 25%;z-index:3;clip-path:polygon(0 0,100% 0,90% 55%,76% 35%,67% 65%,55% 38%,43% 72%,30% 40%,16% 65%)}
+    .body{position:absolute;width:115px;height:82px;background:#090a0f;left:7px;top:91px;border-radius:28px 28px 8px 8px}
+    .eye{position:absolute;width:12px;height:7px;background:#ff003c;border-radius:50%;top:52px;z-index:4;box-shadow:0 0 8px #ff003c;}
+    .e1{left:44px}.e2{left:70px}
+    .cloak{position:absolute;left:48px;top:100px;width:35px;height:55px;background:#8b111d;z-index:4;clip-path:polygon(50% 0,100% 100%,0 100%)}
+    @keyframes float{50%{transform:translateY(-8px)}}
+    .thanks{font-size:26px;font-weight:bold;color:#ff4757;margin-top:15px;letter-spacing:1px;}
+
+    .theme-toggle{
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      padding: 10px 15px;
+      background:linear-gradient(135deg, #238636, #2ea043);
+      border: none;
+      border-radius: 20px;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(35, 134, 54, 0.4);
+    }
+    .theme-toggle:hover{
+      transform: scale(1.12);
+      box-shadow: 0 8px 20px rgba(35, 134, 54, 0.6);
+    }
+    .theme-toggle:active{
+      transform: scale(0.98);
+    }
+
+    .copy-btn{
+      background:linear-gradient(135deg, #58a6ff, #79c0ff);
+      color: #0d1117;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 10px;
+      margin-right: 5px;
+      transition: all 0.2s;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(88, 166, 255, 0.3);
+    }
+    .copy-btn:hover{
+      background:linear-gradient(135deg, #79c0ff, #a3d8ff);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(88, 166, 255, 0.5);
+    }
+
+    .search-bar{
+      margin: 15px 0;
+      display: flex;
+      gap: 8px;
+    }
+    .search-bar input{
+      flex: 1;
+      border: 2px solid #58a6ff !important;
+      background: linear-gradient(135deg, rgba(13,17,23,0.8), rgba(26,31,46,0.8)) !important;
+    }
+    .search-bar button{
+      background:linear-gradient(135deg, #238636, #2ea043);
+      color:#fff;
+    }
+
+    .mini-btn{
+      background:linear-gradient(135deg, #f0883e, #ff8c42);
+      color:#0d1117;
+      padding:6px 12px;
+      font-size:12px;
+      border-radius:6px;
+      border:none;
+      cursor:pointer;
+      font-weight:bold;
+      transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(240, 136, 62, 0.3);
+    }
+    .mini-btn:hover{
+      background:linear-gradient(135deg, #ff8c42, #ffa726);
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 6px 16px rgba(240, 136, 62, 0.6);
+    }
+
+    .fab-container{
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 10px;
+    }
+    .fab-main{
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #238636, #2ea043);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(35, 134, 54, 0.4);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .fab-main:hover{
+      transform: scale(1.15) rotate(45deg);
+      box-shadow: 0 12px 32px rgba(35, 134, 54, 0.6);
+    }
+    .fab-item{
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #58a6ff, #79c0ff);
+      color: #0d1117;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+      transition: all 0.3s;
+      opacity: 0;
+      transform: scale(0);
+    }
+    .fab-open .fab-item{
+      opacity: 1;
+      transform: scale(1);
+    }
+    .fab-item:hover{
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(88, 166, 255, 0.5);
+    }
+
+    .shortcuts-panel{
+      position: fixed;
+      bottom: 100px;
+      right: 30px;
+      background: linear-gradient(135deg, #0d1117, #161b22);
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 12px;
+      color: #8b949e;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 998;
+      min-width: 200px;
+    }
+    .shortcuts-panel.show{
+      display: block;
+      animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn{
+      from{
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to{
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .shortcut-item{
+      padding: 6px 0;
+      border-bottom: 1px solid #30363d;
+    }
+    .shortcut-key{
+      color: #58a6ff;
+      font-weight: 600;
+    }
+
+    .stats-grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .stat-card{
+      background: linear-gradient(135deg, rgba(88,166,255,0.1), rgba(79,195,247,0.1));
+      border: 1px solid #58a6ff;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: inset 0 0 10px rgba(88, 166, 255, 0.1);
+    }
+    .stat-card .label{
+      font-size: 12px;
+      color: #8b949e;
+      font-weight: 600;
+    }
+    .stat-card .value{
+      font-size: 24px;
+      font-weight: 800;
+      background:linear-gradient(135deg, #58a6ff, #79c0ff);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+      margin-top: 8px;
+    }
+
+    .recent-item{
+      background: linear-gradient(135deg, rgba(88,166,255,0.1), rgba(79,195,247,0.05));
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 8px 0;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .recent-item:hover{
+      background: linear-gradient(135deg, rgba(88,166,255,0.2), rgba(79,195,247,0.15));
+      border-color: #58a6ff;
+      transform: translateX(5px);
+    }
+    .recent-item-info{
+      flex: 1;
+    }
+    .recent-item-name{
+      color: #58a6ff;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .recent-item-amount{
+      color: #3fb950;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .recent-item-btn{
+      background: #238636;
+      color: #fff;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .profit-display{
+      background: linear-gradient(135deg, rgba(63,185,80,0.1), rgba(86,211,100,0.1));
+      border: 1px solid #3fb950;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+      box-shadow: inset 0 0 10px rgba(63, 185, 80, 0.1);
+    }
+    .profit-display .label{
+      color: #8b949e;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .profit-display .value{
+      font-size: 22px;
+      font-weight: 800;
+      color: #3fb950;
+      margin-top: 6px;
+    }
+
+    @media(max-width:650px){
+      .grid{grid-template-columns:1fr}
+      .card{padding:18px;margin:12px auto}
+      .big{font-size:22px}
+      th,td{font-size:12px;padding:8px;}
+      .theme-toggle{
+        position: static;
+        margin: 10px auto;
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">🌙 Dark</button>
+
+<!-- PAGE 1: HOME / LOGIN -->
+<section id="home" class="card">
+  <div class="nav">
+    <b>ITEM CALCULATOR</b>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menuHome')">⋮</button>
+      <div id="menuHome" class="menu hidden">
+        <button onclick="show('freshCalcPage')">📊 Fresh / Scrap %</button>
+        <button onclick="show('workCalcPage')">🧮 Total Work</button>
+        <button onclick="show('savedFilesPage')">📁 Saved Files</button>
+        <button onclick="show('page3')">✨ Item Calculator</button>
+        <button onclick="refreshPage()">↻ Refresh</button>
+      </div>
+    </div>
+  </div>
+  <h1>⚡ ITEM COST CALCULATOR</h1>
+  <p style="text-align:center;color:#8b949e;">Welcome. Login once and your session will stay saved on this browser.</p>
+  <div class="row">
+    <button class="primary" onclick="show('signup')">SIGN UP</button>
+    <button onclick="show('login')">LOGIN</button>
+  </div>
+</section>
+
+<!-- SIGNUP -->
+<section id="signup" class="card hidden">
+  <div class="nav">
+    <b>CREATE ACCOUNT</b>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menuSignup')">⋮</button>
+      <div id="menuSignup" class="menu hidden">
+        <button onclick="show('workCalcPage')">🧮 Total Work</button>
+        <button onclick="show('savedFilesPage')">📁 Saved Files</button>
+        <button onclick="show('home')">⌂ Home</button>
+        <button onclick="refreshPage()">↻ Refresh</button>
+      </div>
+    </div>
+  </div>
+  <h2>Create New User</h2>
+  <div class="grid">
+    <div><label>Name</label><input id="sname"></div>
+    <div><label>Phone Number</label><input id="sphone" inputmode="numeric"></div>
+    <div><label>Password</label><input id="spass" type="password"></div>
+  </div>
+  <div class="row">
+    <button class="primary" onclick="signup()">Create Account</button>
+    <button onclick="show('home')">Back</button>
+    <button class="linkBtn" onclick="togglePass('spass',this)">👁 Show Password</button>
+  </div>
+</section>
+
+<!-- LOGIN -->
+<section id="login" class="card hidden">
+  <div class="nav">
+    <b>LOGIN</b>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menuLogin')">⋮</button>
+      <div id="menuLogin" class="menu hidden">
+        <button onclick="show('workCalcPage')">🧮 Total Work</button>
+        <button onclick="show('savedFilesPage')">📁 Saved Files</button>
+        <button onclick="show('home')">⌂ Home</button>
+        <button onclick="refreshPage()">↻ Refresh</button>
+      </div>
+    </div>
+  </div>
+  <h2>Login</h2>
+  <div class="grid">
+    <div><label>Phone No. / Name</label><input id="luser"></div>
+    <div><label>Password</label><input id="lpass" type="password"></div>
+  </div>
+  <div class="row">
+    <button class="primary" onclick="login()">Login & Continue</button>
+    <button onclick="show('home')">Back</button>
+    <button class="linkBtn" onclick="togglePass('lpass',this)">👁 Show Password</button>
+    <button class="linkBtn" onclick="show('forgot')">Forgot Password?</button>
+  </div>
+</section>
+
+<!-- FORGOT PASSWORD -->
+<section id="forgot" class="card hidden">
+  <div class="nav">
+    <b>FORGOT PASSWORD</b>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menuForgot')">⋮</button>
+      <div id="menuForgot" class="menu hidden">
+        <button onclick="show('workCalcPage')">🧮 Total Work</button>
+        <button onclick="show('savedFilesPage')">📁 Saved Files</button>
+        <button onclick="show('home')">⌂ Home</button>
+        <button onclick="refreshPage()">↻ Refresh</button>
+      </div>
+    </div>
+  </div>
+  <h2>Forgot Password</h2>
+  <p style="text-align:center"><small style="color:#8b949e">Enter registered phone number and create a new password.</small></p>
+  <div class="grid">
+    <div><label>Phone Number</label><input id="fphone" inputmode="numeric"></div>
+    <div><label>New Password</label><input id="fpass" type="password"></div>
+  </div>
+  <div class="row">
+    <button class="primary" onclick="resetPassword()">Reset Password</button>
+    <button onclick="show('login')">Back to Login</button>
+    <button class="linkBtn" onclick="togglePass('fpass',this)">👁 Show Password</button>
+  </div>
+</section>
+
+<!-- PAGE 2: USER DASHBOARD -->
+<section id="page2" class="card hidden">
+  <div class="nav">
+    <b>ITEM CALCULATOR</b>
+    <button class="homeBtn" onclick="goHome()">⌂ HOME</button>
+     <button onclick="refreshPage()">↻ REFRESH</button>
+  </div>
+  <h2>Welcome, <span id="userName">User</span> 👋</h2>
+  <div class="result">
+    <p style="text-align:center">Your login is active. Press START to begin calculation or view saved records.</p>
+    <div class="row">
+      <button class="primary" style="font-size: 18px; padding: 14px 28px;" onclick="startCalculator()">▶ START</button>
+    </div>
+  </div>
+</section>
+
+<!-- SAVED FILES -->
+<section id="savedFilesPage" class="card hidden">
+  <div class="nav">
+    <b>SAVED FILES RECORDS</b>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menuSaved')">⋮</button>
+      <div id="menuSaved" class="menu hidden"><button onclick="goHome()">⌂ Home</button><button onclick="refreshPage()">↻ Refresh</button><button onclick="show('workCalcPage')">🧮 Total Work</button></div>
+    </div>
+  </div>
+  <h2>📁 Saved Calculations</h2>
+  
+  <div class="search-bar">
+    <input id="searchInput" type="text" placeholder="Search by item name..." onkeyup="searchItems()">
+    <button class="primary" onclick="clearSearch()">Clear</button>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr><th>S.No.</th><th>Item Name</th><th>Final Rate</th><th>Final Rate (With Outer Fix)</th></tr>
+      </thead>
+      <tbody id="savedFilesTableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="result" style="margin-top:20px;">
+    <h3>🧮 Saved Total Work</h3>
+    <div class="table-container">
+      <table>
+        <thead><tr><th>S.No.</th><th>Total Weight</th><th>Item Weight</th><th>PCS</th><th>Total PCS</th><th>Rate</th><th>Total Work</th></tr></thead>
+        <tbody id="savedWorkTableBody"></tbody>
+      </table>
+    </div>
+    <div class="row">
+      <button class="danger" onclick="clearSavedWork()">🗑 Clear Work Files</button>
+    </div>
+  </div>
+
+  <div class="row">
+    <button class="primary" onclick="downloadCSV()">📥 Download CSV / Excel</button>
+    <button class="danger" onclick="clearAllSavedFiles()">🗑 Clear All Files</button>
+    <button class="primary" onclick="show('page3')">Go to Calculator (Page 3) →</button>
+  </div>
+</section>
+
+<!-- PAGE 3: ITEM ENTRY -->
+<section id="page3" class="card animated-card hidden">
+  <div class="nav">
+    <b style="color:#58a6ff;">✨ ITEM ENTRY</b>
+    <div style="display:flex;gap:10px;">
+      <button class="mini-btn" onclick="loadTemplate('gold')" title="Gold Template">🏆 GOLD</button>
+      <button class="mini-btn" onclick="loadTemplate('silver')" title="Silver Template">🔈 SILVER</button>
+      <button class="mini-btn" onclick="show('recentCalcs')" title="Recent Calcs">⏱️ RECENT</button>
+    </div>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menu3')">⋮</button>
+      <div id="menu3" class="menu hidden">
+        <button onclick="goHome()">⌂ Home</button>
+        <button onclick="show('freshCalcPage')">📊 Fresh / Scrap %</button>
+        <button onclick="show('workCalcPage')">🧮 Total Work</button>
+        <button onclick="show('savedFilesPage')">📁 Saved Files</button>
+        <button onclick="show('statsPage')">📊 Statistics</button>
+        <button onclick="refreshPage()">↻ Refresh</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="grid">
+    <div><label>Item Name</label><input id="itemName"></div>
+    <div><label>Item Thickness</label><input id="thickness" type="number" step="any"></div>
+    <div><label>Item Weight</label><input id="itemWeight" type="number" step="any"></div>
+    <div><label>Item Rate</label><input id="itemRate" type="number" step="any"></div>
+    <div><label>Scrap Weight</label><input id="scrapWeight" type="number" step="any"></div>
+    <div><label>Scrap Rate</label><input id="scrapRate" type="number" step="any"></div>
+    <div><label>Item Quantity</label><input id="qty" type="number" step="any"></div>
+    <div><label>Item Quantity Weight</label><input id="qtyWeight" type="number" step="any"></div>
+    <div><label>Charges Rate</label><input id="chargesRate" type="number" step="any"></div>
+  </div>
+  <div class="row">
+    <button class="primary" onclick="calculate()">CALCULATE</button>
+    <button onclick="saveItem()">SAVE ITEM</button>
+    <button onclick="newCalculation()">＋ NEW CALCULATION</button>
+    <button class="primary" onclick="openPage4()">OUTER COSTING →</button>
+  </div>
+  <div id="r1" class="result hidden"></div>
+  <div class="profit-display hidden" id="profitDisplay">
+    <div class="label">💰 PROFIT MARGIN</div>
+    <div class="value" id="profitValue">0%</div>
+  </div>
+</section>
+
+<!-- FRESH / SCRAP % -->
+<section id="freshCalcPage" class="card hidden">
+  <div class="nav">
+    <b>📊 FRESH ITEM / SCRAP %</b>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menuFresh')">⋮</button>
+      <div id="menuFresh" class="menu hidden">
+        <button onclick="goHome()">⌂ Home</button>
+        <button onclick="show('savedFilesPage')">📁 Saved Files</button>
+        <button onclick="refreshPage()">↻ Refresh</button>
+      </div>
+    </div>
+  </div>
+  <h2>Fresh Item & Scrap Percentage</h2>
+  <div class="result" style="text-align:center;">
+    <b>FORMULA</b><br>
+    Scrap % = (Scrap Weight ÷ Fresh Weight) × 100
+    <br><br>
+    Example: <b>100 KG Fresh + 40 KG Scrap = 40% Scrap</b>
+  </div>
+  <div class="grid">
+    <div><label>Fresh Item Weight (KG)</label><input id="freshWeight" type="number" step="any" min="0" placeholder="100"></div>
+    <div><label>Scrap / Kharab Weight (KG)</label><input id="freshScrapWeight" type="number" step="any" min="0" placeholder="40"></div>
+  </div>
+  <div class="row">
+    <button class="primary" onclick="calculateFreshScrap()">CALCULATE SCRAP %</button>
+    <button onclick="clearFreshScrap()">CLEAR</button>
+    <button onclick="show('page3')">← BACK</button>
+  </div>
+  <div id="freshScrapResult" class="result hidden"></div>
+</section>
+
+<!-- TOTAL WORK CALCULATOR -->
+<section id="workCalcPage" class="card hidden">
+  <div class="nav">
+    <b>🧮 TOTAL WORK CALCULATOR</b>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menuWork')">⋮</button>
+      <div id="menuWork" class="menu hidden">
+        <button onclick="goHome()">⌂ Home</button>
+        <button onclick="refreshPage()">↻ Refresh</button>
+        <button onclick="newWorkCalculation()">＋ New Calculation</button>
+      </div>
+    </div>
+  </div>
+  <h2>New Project — Total Work</h2>
+  <div class="result">
+    <b>FORMULA</b><br><br>
+    Total PCS = (Total Weight ÷ Item Weight) × PCS<br>
+    Total Work = Total PCS × Rate
+  </div>
+  <div class="grid">
+    <div><label>Total Weight (KG)</label><input id="workTotalWeight" type="number" step="any" min="0" placeholder="Enter total weight"></div>
+    <div><label>Item Weight (KG)</label><input id="workItemWeight" type="number" step="any" min="0" placeholder="Enter item weight"></div>
+    <div><label>PCS</label><input id="workPcs" type="number" step="any" min="0" placeholder="Enter PCS"></div>
+    <div><label>Rate</label><input id="workRate" type="number" step="any" min="0" placeholder="Enter rate"></div>
+  </div>
+  <div class="row">
+    <button class="primary" onclick="calculateTotalWork()">CALCULATE TOTAL WORK</button>
+    <button onclick="saveWorkCalculation()">💾 SAVE FILE</button>
+    <button onclick="newWorkCalculation()">＋ NEW CALCULATION</button>
+  </div>
+  <div id="workResult" class="result hidden"></div>
+</section>
+
+<!-- PAGE 4: OUTER -->
+<section id="page4" class="card hidden">
+  <div class="nav">
+    <b>OUTER COSTING</b>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menu4')">⋮</button>
+      <div id="menu4" class="menu hidden"><button onclick="goHome()">⌂ Home</button><button onclick="refreshPage()">↻ Refresh</button><button onclick="show('workCalcPage')">🧮 Total Work</button></div>
+    </div>
+  </div>
+  <div id="costBase" class="result"></div>
+  <div class="rateBox">
+    <h3>Additional Rates</h3>
+    <div class="grid">
+      <div><label>Outer Rate</label><input id="outerRate" type="number" step="any" value="0"></div>
+      <div><label>Ripit Rate</label><input id="ripitRate" type="number" step="any" value="0"></div>
+      <div><label>Labour Rate</label><input id="labourRate" type="number" step="any" value="0"></div>
+    </div>
+    <div class="row">
+      <button class="primary" onclick="calculateOuter()">CALCULATE OUTER COSTING</button>
+      <button onclick="saveRates()">SAVE RATES</button>
+    </div>
+  </div>
+  <div id="outerResult" class="result hidden"></div>
+  <div class="row">
+    <button onclick="show('page3')">← Back</button>
+    <button class="primary" onclick="openPage5()">FINAL PAGE →</button>
+  </div>
+</section>
+
+<!-- PAGE 5: FINAL -->
+<section id="page5" class="card hidden">
+  <div class="nav">
+    <b>FINAL COST & SUMMARY</b>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menu5')">⋮</button>
+      <div id="menu5" class="menu hidden"><button onclick="goHome()">⌂ Home</button><button onclick="refreshPage()">↻ Refresh</button><button onclick="show('workCalcPage')">🧮 Total Work</button></div>
+    </div>
+  </div>
+  <div id="finalResult" class="result"></div>
+  <div class="row">
+    <button onclick="show('page4')">← Back</button>
+    <button class="primary" onclick="goHome()">⌂ HOME</button>
+  </div>
+</section>
+
+<!-- RECENT CALCS -->
+<section id="recentCalcs" class="card hidden">
+  <div class="nav">
+    <b>⏱️ RECENT CALCULATIONS</b>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menuRecent')">⋮</button>
+      <div id="menuRecent" class="menu hidden"><button onclick="show('page3')">← Back</button><button onclick="clearRecent()">🗑 Clear Recent</button></div>
+    </div>
+  </div>
+  <h2>Last 10 Calculations</h2>
+  <div id="recentList" style="margin-top:20px;"></div>
+  <div class="row" style="margin-top:30px;">
+    <button class="primary" onclick="show('page3')">← Back to Calculator</button>
+  </div>
+</section>
+
+<!-- STATISTICS -->
+<section id="statsPage" class="card hidden">
+  <div class="nav">
+    <b>📊 STATISTICS & ANALYTICS</b>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menuStats')">⋮</button>
+      <div id="menuStats" class="menu hidden"><button onclick="goHome()">⌂ Home</button><button onclick="show('page3')">← Calculator</button></div>
+    </div>
+  </div>
+  <h2>Dashboard</h2>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="label">Total Items</div><div class="value" id="statTotalItems">0</div></div>
+    <div class="stat-card"><div class="label">Total Amount</div><div class="value" id="statTotalAmount">₹0</div></div>
+    <div class="stat-card"><div class="label">Avg Amount</div><div class="value" id="statAvgAmount">₹0</div></div>
+    <div class="stat-card"><div class="label">Highest Rate</div><div class="value" id="statHighest">₹0</div></div>
+  </div>
+  <h3 style="margin-top:30px;color:#58a6ff;">Recent Activity</h3>
+  <div id="statsDetail" style="margin-top:15px;"></div>
+  <div class="row" style="margin-top:30px;">
+    <button class="primary" onclick="show('page3')">← Back to Calculator</button>
+  </div>
+</section>
+
+<!-- PROFIT CALCULATOR -->
+<section id="profitPage" class="card hidden">
+  <div class="nav">
+    <b>💰 PROFIT CALCULATOR</b>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menuProfit')">⋮</button>
+      <div id="menuProfit" class="menu hidden"><button onclick="goHome()">⌂ Home</button><button onclick="show('page3')">← Back</button></div>
+    </div>
+  </div>
+  <h2>Calculate Your Profit & Margins</h2>
+  <div class="grid">
+    <div><label>Cost Price (₹)</label><input id="costPrice" type="number" step="any" placeholder="Enter cost"></div>
+    <div><label>Selling Price (₹)</label><input id="sellingPrice" type="number" step="any" placeholder="Enter selling price"></div>
+    <div><label>Quantity (PCS)</label><input id="profitQty" type="number" step="any" placeholder="Enter quantity"></div>
+  </div>
+  <div class="row">
+    <button class="primary" onclick="calculateProfit()">CALCULATE PROFIT</button>
+    <button onclick="clearProfit()">CLEAR</button>
+    <button class="primary" onclick="show('page3')">← Back</button>
+  </div>
+  <div id="profitResult" class="result hidden"></div>
+</section>
+
+<!-- COMPARISON TOOL -->
+<section id="comparePage" class="card hidden">
+  <div class="nav">
+    <b>⚖️ COMPARISON TOOL</b>
+    <div class="menuWrap">
+      <button class="dots" onclick="toggleMenu('menuCompare')">⋮</button>
+      <div id="menuCompare" class="menu hidden"><button onclick="goHome()">⌂ Home</button></div>
+    </div>
+  </div>
+  <h2>Compare Two Items</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;">
+    <div style="border:1px solid #58a6ff;border-radius:10px;padding:15px;">
+      <h3 style="color:#58a6ff;text-align:center;">Item 1</h3>
+      <div class="grid">
+        <div><label>Item Name</label><input id="comp1Name" placeholder="Name"></div>
+        <div><label>Final Amount (₹)</label><input id="comp1Amount" type="number" step="any" placeholder="Amount"></div>
+      </div>
+    </div>
+    <div style="border:1px solid #f0883e;border-radius:10px;padding:15px;">
+      <h3 style="color:#f0883e;text-align:center;">Item 2</h3>
+      <div class="grid">
+        <div><label>Item Name</label><input id="comp2Name" placeholder="Name"></div>
+        <div><label>Final Amount (₹)</label><input id="comp2Amount" type="number" step="any" placeholder="Amount"></div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <button class="primary" onclick="compareItems()">COMPARE</button>
+    <button onclick="show('page3')">← Back</button>
+  </div>
+  <div id="compareResult" class="result hidden"></div>
+</section>
+
+<!-- THANK YOU ANIMATION -->
+<section id="thanks" class="card hidden">
+  <div class="itachi">
+    <div class="itachiChar">
+      <div class="hair"></div>
+      <div class="head"></div>
+      <div class="eye e1"></div>
+      <div class="eye e2"></div>
+      <div class="body"></div>
+      <div class="cloak"></div>
+    </div>
+    <div class="thanks">ありがとう — THANKS!</div>
+    <p style="color:#8b949e;">Account created successfully.</p>
+  </div>
+</section>
+
+<!-- FLOATING ACTION BUTTONS -->
+<div class="fab-container" id="fabContainer">
+  <button class="fab-main" onclick="toggleFab()" title="Quick Menu">⚙️</button>
+  <button class="fab-item" onclick="show('profitPage')" title="Profit Calculator">💰</button>
+  <button class="fab-item" onclick="show('comparePage')" title="Comparison">⚖️</button>
+  <button class="fab-item" onclick="show('statsPage')" title="Statistics">📊</button>
+  <button class="fab-item" onclick="show('page3')" title="Calculator">🧮</button>
+</div>
+
+<!-- SHORTCUTS HELP -->
+<div class="shortcuts-panel" id="shortcutsPanel">
+  <div class="shortcut-item"><span class="shortcut-key">Ctrl+C</span> - Copy Result</div>
+  <div class="shortcut-item"><span class="shortcut-key">Ctrl+S</span> - Save Item</div>
+  <div class="shortcut-item"><span class="shortcut-key">Ctrl+L</span> - Load Template</div>
+  <div class="shortcut-item"><span class="shortcut-key">Ctrl+H</span> - Show Help</div>
+</div>
+
+<script>
+const ids=['itemName','thickness','itemWeight','itemRate','scrapWeight','scrapRate','qty','qtyWeight','chargesRate'];
+let calc={}, outerCost=0, totalCost=0;
+
+function toggleTheme(){
+  const isDark = document.body.classList.toggle('light-mode');
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  const btn = document.querySelector('.theme-toggle');
+  btn.textContent = isDark ? '☀️ Light' : '🌙 Dark';
+}
+
+function loadTheme(){
+  const theme = localStorage.getItem('theme') || 'dark';
+  if(theme === 'light'){
+    document.body.classList.add('light-mode');
+    document.querySelector('.theme-toggle').textContent = '☀️ Light';
+  }
+}
+
+function toggleFab(){
+  document.getElementById('fabContainer').classList.toggle('fab-open');
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.ctrlKey){
+    if(e.key === 's' || e.key === 'S'){ e.preventDefault(); document.querySelector('#page3').style.display !== 'none' && saveItem(); }
+    if(e.key === 'l' || e.key === 'L'){ e.preventDefault(); show('page3'); }
+    if(e.key === 'h' || e.key === 'H'){ e.preventDefault(); document.getElementById('shortcutsPanel').classList.toggle('show'); }
+  }
+});
+
+function calculateProfit(){
+  const cp = parseFloat(document.getElementById('costPrice').value) || 0;
+  const sp = parseFloat(document.getElementById('sellingPrice').value) || 0;
+  const qty = parseFloat(document.getElementById('profitQty').value) || 1;
+  if(cp <= 0) return alert('Enter Cost Price');
+  if(sp <= 0) return alert('Enter Selling Price');
+  const profitPerUnit = sp - cp;
+  const totalProfit = profitPerUnit * qty;
+  const marginPercent = ((profitPerUnit / cp) * 100).toFixed(2);
+  document.getElementById('profitResult').classList.remove('hidden');
+  document.getElementById('profitResult').innerHTML = `
+    <div class="big">PROFIT ANALYSIS</div>
+    <b>Cost Price Per Unit:</b> ${money(cp)}<br>
+    <b>Selling Price Per Unit:</b> ${money(sp)}<br>
+    <b>Profit Per Unit:</b> <span style="color:#3fb950;font-weight:bold;">${money(profitPerUnit)}</span><br>
+    <b>Total Quantity:</b> ${qty.toFixed(2)} PCS<br><br>
+    <b>Total Profit:</b> <div class="amount" style="color:#3fb950;">${money(totalProfit)}</div>
+    <b>Profit Margin:</b> <div class="amount" style="color:#3fb950;">${marginPercent}%</div><br>
+    <button class="copy-btn" onclick="copyToClipboard('Profit: ${money(totalProfit)}\\nMargin: ${marginPercent}%')">📋 Copy</button>
+    <button class="copy-btn" onclick="printResult('profitResult')">🖨️ Print</button>
+  `;
+}
+
+function clearProfit(){
+  document.getElementById('costPrice').value = '';
+  document.getElementById('sellingPrice').value = '';
+  document.getElementById('profitQty').value = '';
+  document.getElementById('profitResult').classList.add('hidden');
+}
+
+function compareItems(){
+  const name1 = document.getElementById('comp1Name').value || 'Item 1';
+  const amt1 = parseFloat(document.getElementById('comp1Amount').value) || 0;
+  const name2 = document.getElementById('comp2Name').value || 'Item 2';
+  const amt2 = parseFloat(document.getElementById('comp2Amount').value) || 0;
+  if(amt1 === 0 || amt2 === 0) return alert('Enter amounts for both items');
+  const diff = Math.abs(amt1 - amt2);
+  const percent = ((diff / Math.min(amt1, amt2)) * 100).toFixed(2);
+  const winner = amt1 > amt2 ? name1 : name2;
+  document.getElementById('compareResult').classList.remove('hidden');
+  document.getElementById('compareResult').innerHTML = `
+    <div class="big">COMPARISON RESULT</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:20px 0;">
+      <div style="background:rgba(88,166,255,0.1);border:1px solid #58a6ff;border-radius:10px;padding:15px;text-align:center;">
+        <b>${name1}</b><br><div class="amount">${money(amt1)}</div>
+      </div>
+      <div style="background:rgba(88,166,255,0.1);border:1px solid #58a6ff;border-radius:10px;padding:15px;text-align:center;">
+        <b>${name2}</b><br><div class="amount">${money(amt2)}</div>
+      </div>
+    </div>
+    <hr>
+    <b>🏆 Winner:</b> <span style="color:#3fb950;font-weight:bold;">${winner}</span><br>
+    <b>Difference:</b> ${money(diff)} (${percent}%)<br>
+    <b style="color:#3fb950;">${winner} is ${percent}% higher than ${amt1 < amt2 ? name1 : name2}</b>
+  `;
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
+}
+
+function printResult(elementId) {
+  const element = document.getElementById(elementId);
+  if (!element || element.classList.contains('hidden')) return alert('No result to print');
+  const printWindow = window.open('', '', 'height=600,width=800');
+  printWindow.document.write('<html><head><title>Calculation Report</title>');
+  printWindow.document.write('<style>body{font-family:Arial;padding:20px;} .result{border:1px solid #ccc;padding:15px;border-radius:8px;}</style>');
+  printWindow.document.write('</head><body><h2>Item Cost Calculator Report</h2>');
+  printWindow.document.write('<div class="result">' + element.innerHTML + '</div>');
+  printWindow.document.write('<p><small>Generated on: ' + new Date().toLocaleString() + '</small></p>');
+  printWindow.document.write('</body></html>');
+  printWindow.document.close();
+  printWindow.print();
+}
+
+function searchItems(){
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const rows = document.getElementById('savedFilesTableBody').querySelectorAll('tr');
+  rows.forEach(row => row.style.display = row.textContent.toLowerCase().includes(searchTerm) ? '' : 'none');
+}
+
+function clearSearch(){ document.getElementById('searchInput').value = ''; searchItems(); }
+
+function loadTemplate(type){
+  if(type === 'gold'){
+    document.getElementById('itemName').value = 'Gold Item';
+    document.getElementById('thickness').value = '2.5';
+    document.getElementById('itemWeight').value = '100';
+    document.getElementById('itemRate').value = '6000';
+    document.getElementById('scrapWeight').value = '5';
+    document.getElementById('scrapRate').value = '5500';
+    document.getElementById('qty').value = '50';
+    document.getElementById('qtyWeight').value = '2';
+    document.getElementById('chargesRate').value = '30';
+    alert('🏆 Gold Template Loaded!');
+  } else if(type === 'silver'){
+    document.getElementById('itemName').value = 'Silver Item';
+    document.getElementById('thickness').value = '1.5';
+    document.getElementById('itemWeight').value = '50';
+    document.getElementById('itemRate').value = '800';
+    document.getElementById('scrapWeight').value = '3';
+    document.getElementById('scrapRate').value = '700';
+    document.getElementById('qty').value = '100';
+    document.getElementById('qtyWeight').value = '0.5';
+    document.getElementById('chargesRate').value = '20';
+    alert('🔈 Silver Template Loaded!');
+  }
+}
+
+function getRecentCalcList(){ return JSON.parse(localStorage.getItem('recentCalcs') || '[]'); }
+
+function addToRecent(calcData){
+  let recent = getRecentCalcList();
+  recent.unshift({...calcData, timestamp: new Date().toLocaleString()});
+  recent = recent.slice(0, 10);
+  localStorage.setItem('recentCalcs', JSON.stringify(recent));
+  loadRecentList();
+}
+
+function loadRecentList(){
+  const recent = getRecentCalcList();
+  const container = document.getElementById('recentList');
+  if(recent.length === 0){ container.innerHTML = '<p style="color:#8b949e;text-align:center;">No recent calculations</p>'; return; }
+  container.innerHTML = '';
+  recent.forEach((item, index) => {
+    const div = document.createElement('div');
+    div.className = 'recent-item';
+    div.innerHTML = `
+      <div class="recent-item-info">
+        <div class="recent-item-name">${item.name}</div>
+        <div class="recent-item-amount">₹ ${(item.finalAmount || 0).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:4px;">${item.timestamp}</div>
+      </div>
+      <button class="recent-item-btn" onclick="loadFromRecent(${index})">↺ Load</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function loadFromRecent(index){
+  const recent = getRecentCalcList();
+  const item = recent[index];
+  document.getElementById('itemName').value = item.name;
+  document.getElementById('thickness').value = item.thickness;
+  document.getElementById('itemWeight').value = item.weight;
+  document.getElementById('itemRate').value = item.rate;
+  document.getElementById('scrapWeight').value = item.scrapWeight;
+  document.getElementById('scrapRate').value = item.scrapRate;
+  document.getElementById('qty').value = item.qty;
+  document.getElementById('qtyWeight').value = item.qtyWeight;
+  document.getElementById('chargesRate').value = item.chargesRate;
+  show('page3');
+  calculate();
+}
+
+function clearRecent(){
+  if(confirm('Clear all recent calculations?')){
+    localStorage.removeItem('recentCalcs');
+    loadRecentList();
+  }
+}
+
+function updateStats(){
+  const items = getSavedItemsList();
+  if(items.length === 0){
+    document.getElementById('statTotalItems').textContent = '0';
+    document.getElementById('statTotalAmount').textContent = '₹0';
+    document.getElementById('statAvgAmount').textContent = '₹0';
+    document.getElementById('statHighest').textContent = '₹0';
+    document.getElementById('statsDetail').innerHTML = '<p style="color:#8b949e;">No data yet</p>';
+    return;
+  }
+  const total = items.reduce((sum, item) => sum + (item.finalAmount || 0), 0);
+  const avg = total / items.length;
+  const highest = Math.max(...items.map(item => item.finalAmount || 0));
+  document.getElementById('statTotalItems').textContent = items.length;
+  document.getElementById('statTotalAmount').textContent = '₹' + total.toLocaleString('en-IN', {maximumFractionDigits:0});
+  document.getElementById('statAvgAmount').textContent = '₹' + avg.toLocaleString('en-IN', {maximumFractionDigits:0});
+  document.getElementById('statHighest').textContent = '₹' + highest.toLocaleString('en-IN', {maximumFractionDigits:0});
+  let detail = '<div style="background:#0d1117;border-radius:10px;padding:15px;"><b style="color:#58a6ff;">Top 5 Calculations:</b><br>';
+  const top5 = items.sort((a,b) => b.finalAmount - a.finalAmount).slice(0,5);
+  top5.forEach((item, i) => {
+    detail += `<div style="padding:8px;margin:5px 0;background:rgba(88,166,255,0.1);border-radius:6px;border-left:3px solid #58a6ff;"><b>${i+1}. ${item.name}</b> - <span style="color:#3fb950;">₹${(item.finalAmount || 0).toLocaleString('en-IN', {maximumFractionDigits:2})}</span></div>`;
+  });
+  detail += '</div>';
+  document.getElementById('statsDetail').innerHTML = detail;
+}
+
+function show(id){
+  document.querySelectorAll('section').forEach(x=>x.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id === 'savedFilesPage') renderSavedFilesTable();
+  if(id === 'statsPage') updateStats();
+  if(id === 'recentCalcs') loadRecentList();
+}
+
+function currentUser(){return JSON.parse(localStorage.getItem('account')||'null')}
+
+function signup(){
+  const u={name:sname.value.trim(),phone:sphone.value.trim(),pass:spass.value};
+  if(!u.name||!u.phone||!u.pass)return alert('Please fill all fields.');
+  localStorage.setItem('account',JSON.stringify(u));
+  localStorage.setItem('loggedIn','true');
+  show('thanks');
+  setTimeout(()=>openDashboard(),2800);
+}
+
+function login(){
+  const u=currentUser(); if(!u)return alert('No account found. Please sign up first.');
+  const key=luser.value.trim();
+  if((key!==u.phone&&key.toLowerCase()!==u.name.toLowerCase())||lpass.value!==u.pass)return alert('Wrong login details.');
+  localStorage.setItem('loggedIn','true'); openDashboard();
+}
+
+function openDashboard(){
+  const u=currentUser(); if(!u)return show('home');
+  document.getElementById('userName').textContent=u.name; show('page2'); loadRates();
+}
+
+function startCalculator(){ show('savedFilesPage'); }
+function goHome(){openDashboard()}
+
+function togglePass(id,btn){
+  const el=document.getElementById(id);
+  el.type=el.type==='password'?'text':'password';
+  btn.textContent=el.type==='text'?'🙈 Hide Password':'👁 Show Password';
+}
+
+function toggleMenu(id){document.getElementById(id).classList.toggle('hidden')}
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.menuWrap'))document.querySelectorAll('.menu').forEach(m=>m.classList.add('hidden'));
+});
+
+function resetPassword(){
+  const u=currentUser(),phone=fphone.value.trim(),pass=fpass.value;
+  if(!u)return alert('No account found. Please sign up first.');
+  if(!phone||!pass)return alert('Please enter phone number and new password.');
+  if(phone!==u.phone)return alert('Phone number does not match the registered account.');
+  u.pass=pass;localStorage.setItem('account',JSON.stringify(u));alert('Password reset successfully.');
+  fphone.value='';fpass.value='';show('login');
+}
+
+function val(id){return parseFloat(document.getElementById(id).value)||0}
+function money(n){return '₹ '+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+
+function calculate(){
+  const weight=val('itemWeight'),sw=val('scrapWeight'),q=val('qty'),qw=val('qtyWeight'),rate=val('itemRate'),sr=val('scrapRate'),cr=val('chargesRate');
+  const netWeight=weight-sw,totalPcs=qw>0?(netWeight/qw)*q:0,itemAmount=weight*rate,scrapAmount=sw*sr,charges=totalPcs*cr,finalAmount=itemAmount-scrapAmount+charges,finalPerPcs=totalPcs>0?finalAmount/totalPcs:0;
+  calc={name:document.getElementById('itemName').value||'Unnamed Item',thickness:val('thickness'),weight,rate,scrapWeight:sw,scrapRate:sr,qty:q,qtyWeight:qw,netWeight,totalPcs,chargesRate:cr,itemAmount,scrapAmount,charges,finalAmount,finalPerPcs};
+  const r1=document.getElementById('r1');
+  r1.classList.remove('hidden');
+  r1.innerHTML=`<b>Net Weight:</b> ${netWeight.toFixed(3)}<br><b>Total Pcs:</b> ${totalPcs.toFixed(2)}<br><b>Item Amount:</b> ${money(itemAmount)}<br><b>Scrap Amount:</b> ${money(scrapAmount)}<br><b>Charges:</b> ${money(charges)}<br><b>Final Amount:</b> ${money(finalAmount)}<br><b>Final Amount / Pcs:</b> ${money(finalPerPcs)}<br><button class="copy-btn" onclick="copyToClipboard('Net Weight: ${netWeight.toFixed(3)} KG\\nFinal Amount: ${money(finalAmount)}\\nFinal Amount/Pcs: ${money(finalPerPcs)}')">📋 Copy Result</button> <button class="copy-btn" onclick="printResult('r1')">🖨️ Print</button>`;
+}
+
+function getSavedItemsList(){ return JSON.parse(localStorage.getItem('savedItemsList')||'[]'); }
+
+function saveItem(){
+  calculate();
+  if(!calc.name) return;
+  const list = getSavedItemsList();
+  const finalWithOuter = calc.totalPcs > 0 ? (totalCost > 0 ? totalCost/calc.totalPcs : calc.finalAmount/calc.totalPcs) : calc.finalAmount;
+  list.push({...calc, finalWithOuter: finalWithOuter});
+  localStorage.setItem('savedItemsList', JSON.stringify(list));
+  addToRecent(calc);
+  updateStats();
+  alert('✅ Item saved successfully to records!');
+}
+
+function renderSavedFilesTable(){
+  const list = getSavedItemsList();
+  const tbody = document.getElementById('savedFilesTableBody');
+  tbody.innerHTML = '';
+  if(list.length === 0){ tbody.innerHTML = '<tr><td colspan="4">No saved item files found.</td></tr>'; } else {
+    list.forEach((item, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${index+1}</td><td><b>${item.name}</b></td><td>${money(item.finalAmount)}</td><td>${money(item.finalWithOuter)}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  const workList = getSavedWorkList();
+  const workBody = document.getElementById('savedWorkTableBody');
+  if(workBody){
+    workBody.innerHTML = '';
+    if(workList.length === 0){ workBody.innerHTML = '<tr><td colspan="7">No saved work files found.</td></tr>'; } else {
+      workList.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${index+1}</td><td>${item.totalWeight.toFixed(3)} KG</td><td>${item.itemWeight.toFixed(3)} KG</td><td>${item.pcs.toFixed(2)}</td><td>${item.totalPcs.toFixed(2)}</td><td>${money(item.rate)}</td><td>${money(item.totalWork)}</td>`;
+        workBody.appendChild(tr);
+      });
+    }
+  }
+}
+
+function clearAllSavedFiles(){
+  if(confirm('Are you sure you want to delete all saved files?')){
+    localStorage.removeItem('savedItemsList');
+    renderSavedFilesTable();
+  }
+}
+
+function downloadCSV(){
+  const list = getSavedItemsList();
+  if(list.length === 0) return alert('No data to download!');
+  let csv = 'S.No.,Item Name,Final Rate,Final Item Rate With Outer Fix\n';
+  list.forEach((item, index) => {
+    csv += `${index+1},"${item.name}",${item.finalAmount},${item.finalWithOuter}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.setAttribute('href', url);
+  a.setAttribute('download', 'Saved_Item_Costs.csv');
+  a.click();
+}
+
+function loadRates(){
+  const r=JSON.parse(localStorage.getItem('rates')||'null');if(!r)return;
+  document.getElementById('outerRate').value=r.outer||0;
+  document.getElementById('ripitRate').value=r.ripit||0;
+  document.getElementById('labourRate').value=r.labour||0;
+}
+
+function saveRates(){
+  localStorage.setItem('rates',JSON.stringify({outer:val('outerRate'),ripit:val('ripitRate'),labour:val('labourRate')}));
+  alert('Rates saved.');
+}
+
+function openPage4(){
+  if(!calc.name)calculate();if(!calc.name)return;
+  document.getElementById('costBase').innerHTML=`<div class="big">${calc.name}</div><br>Base Final Amount: <b>${money(calc.finalAmount)}</b><br>Final / PCS: <b>${money(calc.finalPerPcs)}</b>`;
+  calculateOuter();show('page4');
+}
+
+function calculateOuter(){
+  const pcs=calc.totalPcs||0;
+  const o=val('outerRate'),r=val('ripitRate'),l=val('labourRate');
+  const base=calc.finalAmount||0;
+  outerCost=(o+r+l)*pcs;
+  totalCost=base+outerCost;
+  const outerResult=document.getElementById('outerResult');
+  outerResult.classList.remove('hidden');
+  outerResult.innerHTML=`<b>Outer Cost:</b> ${money(o*pcs)}<br><b>Ripit Cost:</b> ${money(r*pcs)}<br><b>Labour Cost:</b> ${money(l*pcs)}<hr><b>TOTAL OUTER COSTING:</b> <span class="amount">${money(outerCost)}</span><br><button class="copy-btn" onclick="copyToClipboard('Total Outer Costing: ${money(outerCost)}')">📋 Copy</button> <button class="copy-btn" onclick="printResult('outerResult')">🖨️ Print</button>`;
+}
+
+function openPage5(){
+  calculateOuter();
+  const finalRateWithOuter = calc.totalPcs>0 ? totalCost/calc.totalPcs : totalCost;
+  document.getElementById('finalResult').innerHTML=`<div class="big">${calc.name||'Item'}</div><div class="result"><b>Previous Item Cost:</b> ${money(calc.finalAmount)}<br><br><b>Total Outer Costing:</b> ${money(outerCost)}<br><hr><b>TOTAL COST:</b><div class="amount">${money(totalCost)}</div><br><b>ITEM RATE:</b><div class="amount">${money(calc.rate)} / KG</div><br><b>FINAL ITEM RATE WITH OUTER FIX:</b><div class="amount">${money(finalRateWithOuter)}</div></div><button class="copy-btn" onclick="copyToClipboard('Total Cost: ${money(totalCost)}\\nFinal Rate: ${money(finalRateWithOuter)}')">📋 Copy</button> <button class="copy-btn" onclick="printResult('finalResult')">🖨️ Print</button>`;
+  show('page5');
+}
+
+function refreshPage(){ window.location.reload(); }
+
+function newCalculation(){
+  calc={}; outerCost=0; totalCost=0;
+  ids.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['r1','outerResult','freshScrapResult'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add('hidden'); });
+  ['freshWeight','freshScrapWeight','freshQty','freshScrapQty'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['outerRate','ripitRate','labourRate'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=0; });
+  show('page3');
+}
+
+function calculateTotalWork(){
+  const totalWeight = parseFloat(document.getElementById('workTotalWeight').value) || 0;
+  const itemWeight = parseFloat(document.getElementById('workItemWeight').value) || 0;
+  const pcs = parseFloat(document.getElementById('workPcs').value) || 0;
+  const rate = parseFloat(document.getElementById('workRate').value) || 0;
+  if(totalWeight <= 0) return alert('Please enter Total Weight.');
+  if(itemWeight <= 0) return alert('Please enter Item Weight.');
+  if(pcs <= 0) return alert('Please enter PCS.');
+  if(rate < 0) return alert('Rate cannot be negative.');
+  const totalPcs = (totalWeight / itemWeight) * pcs;
+  const totalWork = totalPcs * rate;
+  const result = document.getElementById('workResult');
+  result.classList.remove('hidden');
+  result.innerHTML = `
+    <div class="big">TOTAL WORK</div>
+    <b>Total Weight:</b> ${totalWeight.toFixed(3)} KG<br>
+    <b>Item Weight:</b> ${itemWeight.toFixed(3)} KG<br>
+    <b>PCS:</b> ${pcs.toFixed(2)}<br>
+    <b>Rate:</b> ${money(rate)}<br><br>
+    <b>Total PCS:</b> <div class="amount">${totalPcs.toFixed(2)} PCS</div>
+    <b>Total Work:</b> <div class="amount">${money(totalWork)}</div>
+    <hr>
+    <b>Formula:</b><br>
+    Total PCS = (Total Weight ÷ Item Weight) × PCS<br>
+    = (${totalWeight.toFixed(3)} ÷ ${itemWeight.toFixed(3)}) × ${pcs.toFixed(2)} = ${totalPcs.toFixed(2)} PCS<br><br>
+    Total Work = Total PCS × Rate<br>
+    = ${totalPcs.toFixed(2)} × ${money(rate)} = ${money(totalWork)}
+    <br><button class="copy-btn" onclick="copyToClipboard('Total PCS: ${totalPcs.toFixed(2)}\\nTotal Work: ${money(totalWork)}')">📋 Copy</button> <button class="copy-btn" onclick="printResult('workResult')">🖨️ Print</button>
+  `;
+}
+
+function newWorkCalculation(){
+  ['workTotalWeight','workItemWeight','workPcs','workRate'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  const result = document.getElementById('workResult');
+  if(result) result.classList.add('hidden');
+  show('workCalcPage');
+}
+
+function getSavedWorkList(){ return JSON.parse(localStorage.getItem('savedWorkList') || '[]'); }
+
+function saveWorkCalculation(){
+  const totalWeight = parseFloat(document.getElementById('workTotalWeight').value) || 0;
+  const itemWeight = parseFloat(document.getElementById('workItemWeight').value) || 0;
+  const pcs = parseFloat(document.getElementById('workPcs').value) || 0;
+  const rate = parseFloat(document.getElementById('workRate').value) || 0;
+  if(totalWeight <= 0 || itemWeight <= 0 || pcs <= 0 || rate < 0) return alert('Please enter valid Total Weight, Item Weight, PCS and Rate first.');
+  const totalPcs = (totalWeight / itemWeight) * pcs;
+  const totalWork = totalPcs * rate;
+  const list = getSavedWorkList();
+  list.push({totalWeight, itemWeight, pcs, rate, totalPcs, totalWork});
+  localStorage.setItem('savedWorkList', JSON.stringify(list));
+  alert('Total Work file saved successfully!');
+  renderSavedFilesTable();
+}
+
+function clearSavedWork(){
+  if(confirm('Are you sure you want to delete all saved work files?')){
+    localStorage.removeItem('savedWorkList');
+    renderSavedFilesTable();
+  }
+}
+
+function calculateFreshScrap(){
+  const freshEl = document.getElementById('freshWeight');
+  const scrapEl = document.getElementById('freshScrapWeight');
+  const result = document.getElementById('freshScrapResult');
+  const freshWeight = Number(freshEl.value);
+  const scrapWeight = Number(scrapEl.value);
+  if(!Number.isFinite(freshWeight) || freshWeight <= 0){ alert('Please enter Fresh Item Weight.'); freshEl.focus(); return; }
+  if(!Number.isFinite(scrapWeight) || scrapWeight < 0){ alert('Please enter valid Scrap / Kharab Weight.'); scrapEl.focus(); return; }
+  if(scrapWeight > freshWeight){ alert('Scrap Weight cannot be greater than Fresh Item Weight.'); scrapEl.focus(); return; }
+  const scrapPercent = (scrapWeight / freshWeight) * 100;
+  const goodWeight = freshWeight - scrapWeight;
+  const goodPercent = (goodWeight / freshWeight) * 100;
+  result.classList.remove('hidden');
+  result.innerHTML = `
+    <div class="big">SCRAP RESULT</div>
+    <b>Fresh Item Weight:</b> ${freshWeight.toFixed(3)} KG<br>
+    <b>Scrap / Kharab Weight:</b> ${scrapWeight.toFixed(3)} KG<br>
+    <b>Good / Usable Weight:</b> ${goodWeight.toFixed(3)} KG<br><br>
+    <b>SCRAP PERCENTAGE:</b> <div class="amount">${scrapPercent.toFixed(2)}%</div>
+    <b>GOOD / USABLE PERCENTAGE:</b> <div class="amount">${goodPercent.toFixed(2)}%</div>
+    <hr>
+    <b>Formula:</b><br>
+    (${scrapWeight.toFixed(3)} ÷ ${freshWeight.toFixed(3)}) × 100 = ${scrapPercent.toFixed(2)}%
+    <br><button class="copy-btn" onclick="copyToClipboard('Scrap %: ${scrapPercent.toFixed(2)}%\\nGood %: ${goodPercent.toFixed(2)}%')">📋 Copy</button> <button class="copy-btn" onclick="printResult('freshScrapResult')">🖨️ Print</button>
+  `;
+}
+
+function clearFreshScrap(){
+  document.getElementById('freshWeight').value = '';
+  document.getElementById('freshScrapWeight').value = '';
+  document.getElementById('freshScrapResult').classList.add('hidden');
+}
+
+window.addEventListener('load',()=>{
+  loadTheme();
+  if(localStorage.getItem('loggedIn')==='true'&&currentUser())openDashboard();
+});
+</script>
+</body>
+</html>
+```
